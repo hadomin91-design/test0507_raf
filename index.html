@@ -3,80 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Magical Star Trail - RAF</title>
+    <title>요술봉</title>
     <style>
         body {
             margin: 0;
             overflow: hidden;
-            background-color: #050505;
+            background: radial-gradient(circle at center, #1a1a2e 0%, #000 100%);
             height: 100vh;
-            cursor: crosshair;
+            cursor: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-        .star {
+        .box {
             position: absolute;
-            width: 30px;
-            height: 30px;
             pointer-events: none;
-            /* 별 모양 CSS (clip-path 사용) */
+            z-index: 10;
+        }
+        /* 별 모양 */
+        .star {
             clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-            filter: drop-shadow(0 0 10px white);
+        }
+        /* 달 모양 */
+        .moon {
+            border-radius: 50%;
+            background-color: transparent !important;
+        }
+        .instruction {
+            color: rgba(255, 255, 255, 0.2);
+            font-family: 'Arial', sans-serif;
+            font-size: 2vw;
+            letter-spacing: 5px;
+            user-select: none;
         }
     </style>
 </head>
 <body>
+    <div class="instruction">요술봉을 휘두르자!</div>
+
     <script>
-        document.addEventListener('mousemove', function(event) {
-            createStar(event.clientX, event.clientY);
+        const particles = [];
+
+        document.addEventListener('mousemove', function(e) {
+           
+            for(let i = 0; i < 3; i++) {
+                createParticle(e.clientX, e.clientY);
+            }
         });
 
-        function createStar(x, y) {
-            const star = document.createElement('div');
-            star.className = 'star';
+        function createParticle(x, y) {
+            const el = document.createElement('div');
+            const randomType = Math.random();
             
-            // 네온 컬러 랜덤 생성
-            const hue = Math.floor(Math.random() * 360);
-            star.style.backgroundColor = `hsl(${hue}, 100%, 70%)`;
-            star.style.boxShadow = `0 0 20px hsl(${hue}, 100%, 70%)`;
+            let type = 'shape'; // 기본 도형
+            if (randomType > 0.85) type = 'moon';
+            else if (randomType > 0.6) type = 'star';
             
-            // 초기 위치
-            const size = Math.random() * 30 + 10;
-            star.style.width = `${size}px`;
-            star.style.height = `${size}px`;
-            star.style.left = `${x - size/2}px`;
-            star.style.top = `${y - size/2}px`;
-
-            document.body.appendChild(star);
+            el.className = `box ${type}`;
+            
          
-            let rotate = 0;
-            let opacity = 1;
-            let scale = 1;
-            // 약간의 랜덤 이동 방향
-            const vx = (Math.random() - 0.5) * 4;
-            const vy = (Math.random() - 0.5) * 4;
-            let posX = x - size/2;
-            let posY = y - size/2;
-
-            function animate() {
-                rotate += 10;
-                opacity -= 0.02;
-                scale -= 0.01;
-                posX += vx;
-                posY += vy;
+            const size = Math.pow(Math.random(), 1.5) * 45 + 5;
+            el.style.width = `${size}px`;
+            el.style.height = `${size}px`;
+            
+            // 색상 및 모양 디테일
+            const hue = type === 'moon' ? 50 + Math.random() * 20 : Math.random() * 360;
+            const lightness = 70 + Math.random() * 20;
+            const color = `hsl(${hue}, 100%, ${lightness}%)`;
+            
+            if (type === 'moon') {
+                el.style.boxShadow = `${size/3}px ${size/3}px 0 0 ${color}`;
+            } else if (type === 'star') {
+                el.style.backgroundColor = color;
+                el.style.boxShadow = `0 0 ${size}px ${color}`;
+            } else {
                 
-                star.style.transform = `translate(${vx}px, ${vy}px) rotate(${rotate}deg) scale(${scale})`;
-                star.style.left = `${posX}px`;
-                star.style.top = `${posY}px`;
-                star.style.opacity = opacity;
-
-                if (opacity > 0 && scale > 0) {
-                    requestAnimationFrame(animate);
-                } else {
-                    star.remove();
-                }
+                el.style.borderRadius = `${Math.random() * 50}%`;
+                el.style.backgroundColor = color;
+                el.style.boxShadow = `0 0 ${size/2}px ${color}`;
+                el.style.border = '1px solid rgba(255,255,255,0.3)';
             }
             
+            document.body.appendChild(el);
+
+            particles.push({
+                element: el,
+                type: type,
+                x: x - size/2,
+                y: y - size/2,
+                vx: (Math.random() - 0.5) * 8,
+                vy: (Math.random() - 0.5) * 8,
+                rotation: Math.random() * 360,
+                rv: (Math.random() - 0.5) * 20,
+                opacity: 1,
+                scale: 1
+            });
+        }
+
+        function animate() {
+            
+            particles.forEach((p, index) => {
+                p.opacity -= 0.012;
+                p.scale -= 0.008;
+                p.rotation += p.rv;
+                p.x += p.vx;
+                p.y += p.vy;
+
+                p.element.style.left = `${p.x}px`;
+                p.element.style.top = `${p.y}px`;
+                p.element.style.transform = `rotate(${p.rotation}deg) scale(${p.scale})`;
+                p.element.style.opacity = p.opacity;
+
+                if (p.opacity <= 0 || p.scale <= 0) {
+                    p.element.remove();
+                    particles.splice(index, 1);
+                }
+            });
+
             requestAnimationFrame(animate);
         }
+
+        animate();
     </script>
 </body>
 </html>
