@@ -22,7 +22,7 @@
             pointer-events: none;
             z-index: 10;
         }
-        /* 별 모양 */
+        /* 별 */
         .star {
             clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
         }
@@ -68,10 +68,10 @@
     </style>
 </head>
 <body>
-    <div class="instruction">요술봉으로 얍! (클릭해보세요)</div>
+    <div class="instruction">요술봉으로 얍! (클릭!)</div>
 
     <script>
-        const particles = [];
+        const particles = []; 
 
         // 마우스 이동 시 별 가루 효과
         document.addEventListener('mousemove', function(e) {
